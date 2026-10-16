@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <vector>
 
 #define MAX_LENGTH 100
 #define MAX_CUSTOMERS 1000
@@ -10,7 +11,7 @@ struct customer {
     char name[MAX_LENGTH];
 };
 
-struct customers[] search(struct customer list[], int n, int num);
+std::vector<struct customer> search(std::vector<struct customer> list, int n, int num);
 int compare(const void* p, const void* q);
 
 int main() {
@@ -20,7 +21,7 @@ int main() {
     std::cin >> file_name;
 
     // Open file in read-only mode
-    FILE *pFile = open(file_name, "r");
+    FILE *pFile = fopen(file_name, "r");
 
     // Check if the file was opened successfully
     if (pFile == nullptr) {
@@ -28,27 +29,32 @@ int main() {
         return 1;
     }
 
-    struct customer customers[MAX_CUSTOMERS];
-    struct customer searched_customers[MAX_CUSTOMERS];
+    std::vector<struct customer> customers;
+    std::vector<struct customer> searched_customers;
 
-    while(fcanf(pFile, "%[^,],%d,%[^\n]\n", customers[count].email, 
-        &customers[count].number_of_purchase, customers[count].name))
+    struct customer temp;
+    int count = 0;
+    while(fscanf(pFile, "%[^,],%d,%[^\n]\n", temp.email, 
+        &temp.number_of_purchase, temp.name) == 3) {
+            count++;
+            customers.push_back(temp);
+        }
 
     int num;
     std::cout << "Enter the number of purchase: ";
     std::cin >> num;
 
     searched_customers = search(customers, customers.size(), num);
-    qsort(searched_customers, searched_customers.size(), sizeof(struct customer), compare);
+    qsort(searched_customers.data(), searched_customers.size(), sizeof(struct customer), compare);
 
-    FILE *output_file = open("result.csv", 'w');
+    FILE *output_file = fopen("result.csv", "w");
     if(output_file == nullptr) {
         std::cout << "Error creating output file 'result.csv'";
         return 2;
     }
 
     for(int i = 0; i < searched_customers.size(); i++) {
-        fprintf(output_file, "%s, %d, %s\n", searched_customers[i].email, searched_customers[i].number_of_purchase
+        fprintf(output_file, "%s, %d, %s\n", searched_customers[i].email, searched_customers[i].number_of_purchase,
                 searched_customers[i].name);
     
     }
@@ -60,19 +66,19 @@ int main() {
 }
 
 
-struct customers[] search(struct customer list[], int n, int num) {
+std::vector<struct customer> search(std::vector<struct customer> list, int n, int num) {
     std::vector<struct customer> result;
     for(int i = 0; i < list.size(); i++) {
         if(list[i].number_of_purchase >= num) {
-            result.push_back(list[i];)
+            result.push_back(list[i]);
         }
     }
     return result;
 }
 
 int compare(const void* p, const void* q) {
-    p = (struct customer*)p;
-    q = (struct customer*)q;
+    const struct customer* a = (const struct customer*)p;
+    const struct customer* b = (const struct customer*)q;
 
-    return (p->number_of_purchase - q->number_of_purchase);
+    return (a->number_of_purchase - b->number_of_purchase);
 }
