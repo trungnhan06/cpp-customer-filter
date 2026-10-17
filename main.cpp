@@ -8,8 +8,6 @@
 #include "CustomerDatabase.hpp"
 #include "filterByMinPurchases.hpp"
 
-std::vector<customer> search(std::vector<customer>& list, int num);
-
 int main() {
     std::string file_name;
 
@@ -22,32 +20,13 @@ int main() {
         return 1;
     }
 
-    std::vector<customer> customers;
-    std::vector<customer> searched_customers;
-    std::string line;
-
-    while (std::getline(in_file, line)) {
-        if (line.empty()) {
-            continue;
-        }
-
-        std::stringstream ss(line);
-        customer temp;
-        std::string purchase;
-
-        if (std::getline(ss, temp.email, ',') &&
-            std::getline(ss, purchase, ',') &&
-            std::getline(ss, temp.name, ',')) {
-            temp.number_of_purchase = std::stoi(purchase);
-            customers.push_back(temp);
-        }
-    }
+    std::vector<customer> customers_list = readCustomers(in_file);
 
     int num;
     std::cout << "Enter the number of purchase: ";
     std::cin >> num;
 
-    searched_customers = search(customers, num);
+    std::vector<customer>searched_customers = search(customers_list, num);
     std::sort(searched_customers.begin(), searched_customers.end(),
               [](const customer& a, const customer& b) {
                   return a.number_of_purchase < b.number_of_purchase;
@@ -57,12 +36,6 @@ int main() {
     if (!output_file.is_open()) {
         std::cerr << "Error creating output file 'result.csv'\n";
         return 2;
-    }
-
-    for (std::size_t i = 0; i < searched_customers.size(); ++i) {
-        output_file << searched_customers[i].email << ", "
-                    << searched_customers[i].number_of_purchase << ", "
-                    << searched_customers[i].name << '\n';
     }
 
     output_file.close();
