@@ -11,7 +11,7 @@ struct customer {
     char name[MAX_LENGTH];
 };
 
-std::vector<struct customer> search(std::vector<struct customer> list, int n, int num);
+std::vector<struct customer> search(std::vector<struct customer> &list, int num);
 int compare(const void* p, const void* q);
 
 int main() {
@@ -44,7 +44,7 @@ int main() {
     std::cout << "Enter the number of purchase: ";
     std::cin >> num;
 
-    searched_customers = search(customers, customers.size(), num);
+    searched_customers = search(customers, num);
     qsort(searched_customers.data(), searched_customers.size(), sizeof(struct customer), compare);
 
     FILE *output_file = fopen("result.csv", "w");
@@ -66,7 +66,7 @@ int main() {
 }
 
 
-std::vector<struct customer> search(std::vector<struct customer> list, int n, int num) {
+std::vector<struct customer> search(std::vector<struct customer> &list, int num) {
     std::vector<struct customer> result;
     for(int i = 0; i < list.size(); i++) {
         if(list[i].number_of_purchase >= num) {
