@@ -1,24 +1,17 @@
 #include <iostream>
-#include <cstdlib>
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <algorithm>
 
-#define MAX_LENGTH 100
-#define MAX_CUSTOMERS 1000
-
-struct customer {
-    std::string email;
-    int number_of_purchase;
-    std::string name;
-};
+#include "CustomerDatabase.hpp"
+#include "filterByMinPurchases.hpp"
 
 std::vector<customer> search(std::vector<customer>& list, int num);
 
 int main() {
-    char file_name[MAX_LENGTH];
+    std::string file_name;
 
     std::cout << "Enter the file name: ";
     std::cin >> file_name;
@@ -76,12 +69,3 @@ int main() {
     return 0;
 }
 
-std::vector<customer> search(std::vector<customer>& list, int num) {
-    std::vector<customer> result;
-    for (std::size_t i = 0; i < list.size(); ++i) {
-        if (list[i].number_of_purchase >= num) {
-            result.push_back(list[i]);
-        }
-    }
-    return result;
-}
