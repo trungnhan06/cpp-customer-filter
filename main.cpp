@@ -38,6 +38,8 @@ int main() {
         return 2;
     }
 
+    writeCustomers(searched_customers, output_file);
+
     output_file.close();
     return 0;
 }
