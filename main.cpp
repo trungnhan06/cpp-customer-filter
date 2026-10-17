@@ -1,84 +1,87 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <algorithm>
 
 #define MAX_LENGTH 100
 #define MAX_CUSTOMERS 1000
 
 struct customer {
-    char email[MAX_LENGTH];
+    std::string email;
     int number_of_purchase;
-    char name[MAX_LENGTH];
+    std::string name;
 };
 
-std::vector<struct customer> search(std::vector<struct customer> &list, int num);
-int compare(const void* p, const void* q);
+std::vector<customer> search(std::vector<customer>& list, int num);
 
 int main() {
     char file_name[MAX_LENGTH];
-    // Get file name
+
     std::cout << "Enter the file name: ";
     std::cin >> file_name;
 
-    // Open file in read-only mode
-    FILE *pFile = fopen(file_name, "r");
-
-    // Check if the file was opened successfully
-    if (pFile == nullptr) {
-        std::cout << "Error opening input file";
+    std::ifstream in_file(file_name);
+    if (!in_file.is_open()) {
+        std::cerr << "Error opening input file\n";
         return 1;
     }
 
-    std::vector<struct customer> customers;
-    std::vector<struct customer> searched_customers;
+    std::vector<customer> customers;
+    std::vector<customer> searched_customers;
+    std::string line;
 
-    struct customer temp;
-    int count = 0;
-    while(fscanf(pFile, "%[^,],%d,%[^\n]\n", temp.email, 
-        &temp.number_of_purchase, temp.name) == 3) {
-            count++;
+    while (std::getline(in_file, line)) {
+        if (line.empty()) {
+            continue;
+        }
+
+        std::stringstream ss(line);
+        customer temp;
+        std::string purchase;
+
+        if (std::getline(ss, temp.email, ',') &&
+            std::getline(ss, purchase, ',') &&
+            std::getline(ss, temp.name, ',')) {
+            temp.number_of_purchase = std::stoi(purchase);
             customers.push_back(temp);
         }
+    }
 
     int num;
     std::cout << "Enter the number of purchase: ";
     std::cin >> num;
 
     searched_customers = search(customers, num);
-    qsort(searched_customers.data(), searched_customers.size(), sizeof(struct customer), compare);
+    std::sort(searched_customers.begin(), searched_customers.end(),
+              [](const customer& a, const customer& b) {
+                  return a.number_of_purchase < b.number_of_purchase;
+              });
 
-    FILE *output_file = fopen("result.csv", "w");
-    if(output_file == nullptr) {
-        std::cout << "Error creating output file 'result.csv'";
+    std::ofstream output_file("result.csv");
+    if (!output_file.is_open()) {
+        std::cerr << "Error creating output file 'result.csv'\n";
         return 2;
     }
 
-    for(int i = 0; i < searched_customers.size(); i++) {
-        fprintf(output_file, "%s, %d, %s\n", searched_customers[i].email, searched_customers[i].number_of_purchase,
-                searched_customers[i].name);
-    
+    for (std::size_t i = 0; i < searched_customers.size(); ++i) {
+        output_file << searched_customers[i].email << ", "
+                    << searched_customers[i].number_of_purchase << ", "
+                    << searched_customers[i].name << '\n';
     }
 
-    fclose(pFile);
-    fclose(output_file);
-
+    output_file.close();
     return 0;
 }
 
-
-std::vector<struct customer> search(std::vector<struct customer> &list, int num) {
-    std::vector<struct customer> result;
-    for(int i = 0; i < list.size(); i++) {
-        if(list[i].number_of_purchase >= num) {
+std::vector<customer> search(std::vector<customer>& list, int num) {
+    std::vector<customer> result;
+    for (std::size_t i = 0; i < list.size(); ++i) {
+        if (list[i].number_of_purchase >= num) {
             result.push_back(list[i]);
         }
     }
     return result;
-}
-
-int compare(const void* p, const void* q) {
-    const struct customer* a = (const struct customer*)p;
-    const struct customer* b = (const struct customer*)q;
-
-    return (a->number_of_purchase - b->number_of_purchase);
 }
